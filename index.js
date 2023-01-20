@@ -21,18 +21,18 @@ module.exports = function FastFire(dispatch) {
 
   let buff = 0;
 
-  dispatch.hook('sLogin', (event) => {
+  dispatch.hook('S_LOGIN', 14, (event) => {
     ({cid, model} = event);
 
     job = (model - 10101) % 100;
     enabled = [JOB_ARCHER, JOB_GUNNER, JOB_NINJA].includes(job);
   });
 
-  dispatch.hook('sPlayerStatUpdate', (event) => {
+  dispatch.hook('S_PLAYER_STAT_UPDATE', 15, event => {
     aspd = 1 + (event.bonusAttackSpeed / event.baseAttackSpeed);
   });
 
-  dispatch.hook('sAbnormalityBegin', (event) => {
+  dispatch.hook('S_ABNORMALITY_BEGIN', 5, (event) => {
     if (!enabled || !event.target.equals(cid)) return;
 
     if (job === JOB_NINJA && event.id === BUFF_BLAZING_ATTUNEMENT) {
@@ -40,7 +40,7 @@ module.exports = function FastFire(dispatch) {
     }
   });
 
-  dispatch.hook('sAbnormalityRefresh', (event) => {
+  dispatch.hook('S_ABNORMALITY_REFRESH', 2, (event) => {
     if (!enabled || !event.target.equals(cid)) return;
 
     if (job === JOB_NINJA && event.id === BUFF_BLAZING_ATTUNEMENT) {
@@ -48,7 +48,7 @@ module.exports = function FastFire(dispatch) {
     }
   });
 
-  dispatch.hook('sAbnormalityEnd', (event) => {
+  dispatch.hook('S_ABNORMALITY_END', 1, (event) => {
     if (!enabled || !event.target.equals(cid)) return;
 
     if (job === JOB_NINJA && event.id === BUFF_BLAZING_ATTUNEMENT) {
@@ -56,7 +56,7 @@ module.exports = function FastFire(dispatch) {
     }
   });
 
-  dispatch.hook('cStartComboInstantSkill', (event) => {
+  dispatch.hook('C_START_COMBO_INSTANT_SKILL', 7, (event) => {
     if (!enabled) return;
 
     const skill = event.skill - 0x4000000;
@@ -73,7 +73,7 @@ module.exports = function FastFire(dispatch) {
         clearTimeout(last.timer);
         last.timer = null;
 
-        dispatch.toClient('sActionEnd', {
+        dispatch.toClient('S_ACTION_END', 5, {
           source: cid,
           x: event.x,
           y: event.y,
@@ -99,7 +99,7 @@ module.exports = function FastFire(dispatch) {
     if (baseDuration < 0) return;
 
     // send sActionStage
-    dispatch.toClient('sActionStage', {
+    dispatch.toClient('S_ACTION_STAGE', 9, {
       source: cid,
       x: event.x,
       y: event.y,
@@ -126,7 +126,7 @@ module.exports = function FastFire(dispatch) {
     atkid++;
   });
 
-  dispatch.hook('cStartSkill', (event) => {
+  dispatch.hook('C_START_SKILL', 8, (event) => {
     if (!enabled || job !== JOB_NINJA) return;
 
     const skill = event.skill - 0x4000000;
@@ -138,7 +138,7 @@ module.exports = function FastFire(dispatch) {
     const speed = aspd * (Date.now() < buff ? 1.3 : 1);
     const baseDuration = (hit === 0) ? 880 : 390;
 
-    dispatch.toClient('sActionStage', {
+    dispatch.toClient('S_ACTION_STAGE', 9, {
       source: cid,
       x: event.x1,
       y: event.y1,
@@ -165,12 +165,12 @@ module.exports = function FastFire(dispatch) {
     atkid++;
   });
 
-  dispatch.hook('sActionStage', (event) => {
+  dispatch.hook('S_ACTION_STAGE', 9, (event) => {
     if (!enabled || !event.source.equals(cid)) return;
     if (attacks[event.skill]) return false;
   });
 
-  dispatch.hook('sActionEnd', (event) => {
+  dispatch.hook('S_ACTION_END', 5, (event) => {
     if (!enabled || !event.source.equals(cid)) return;
 
     const attack = attacks[event.skill];
@@ -193,7 +193,7 @@ module.exports = function FastFire(dispatch) {
 
     attack.timer = null;
 
-    dispatch.toClient('sActionEnd', {
+    dispatch.toClient('S_ACTION_END', 5, {
       source: cid,
       x: event.x || event.x1,
       y: event.y || event.y1,
